@@ -1,6 +1,7 @@
 name: Build and Release DakimakuraMod
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*.*.*'
