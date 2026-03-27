@@ -9,13 +9,13 @@ import com.github.andrew0030.dakimakuramod.registries.DMEntities;
 import com.github.andrew0030.dakimakuramod.util.ClientInitContext;
 import com.github.andrew0030.dakimakuramod.util.TranslationHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -68,7 +68,7 @@ public class DakimakuraItem extends BEWLRBlockItem
             // If there is already a Bottom of a Dakimakura on the clicked BedBlock, we stop placement logic
             if (this.isDakiEntityOnBlock(level, pos)) return InteractionResult.FAIL;
             // If the BedBlock doesn't have a Dakimakura on it, we place one
-            Daki daki = DakiTagSerializer.deserialize(stack.getTag());
+            Daki daki = DakiTagSerializer.deserialize(stack);
             Dakimakura dakimakura = new Dakimakura(DMEntities.DAKIMAKURA.get(), level);
             dakimakura.setPos(pos.getX() + 0.5D, pos.getY() + 0.5625D, pos.getZ() + 0.5D);
             dakimakura.setDaki(daki);
@@ -100,12 +100,12 @@ public class DakimakuraItem extends BEWLRBlockItem
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext tooltipContext, List<Component> tooltip, TooltipFlag flag)
     {
-        super.appendHoverText(stack, level, tooltip, flag);
+        super.appendHoverText(stack, tooltipContext, tooltip, flag);
         List<Component> myToolTips = new ArrayList<>();
         myToolTips.add(Component.translatable("tooltip.dakimakuramod.dakimakura"));
-        Daki daki = DakiTagSerializer.deserialize(stack.getTag());
+        Daki daki = DakiTagSerializer.deserialize(stack);
         if (daki != null)
         {
             myToolTips.add(Component.translatable("tooltip.dakimakuramod.dakimakura.flip"));
@@ -122,18 +122,14 @@ public class DakimakuraItem extends BEWLRBlockItem
 
     public static boolean isFlipped(ItemStack itemStack)
     {
-        if (itemStack == null || !itemStack.hasTag())
-            return false;
-        return DakiTagSerializer.isFlipped(itemStack.getTag());
+        return DakiTagSerializer.isFlipped(itemStack);
     }
 
     public static ItemStack setFlipped(ItemStack itemStack, boolean flipped)
     {
         if (itemStack == null)
             return null;
-        CompoundTag compound = itemStack.getTag() != null ? itemStack.getTag() : new CompoundTag();
-        itemStack.setTag(compound);
-        DakiTagSerializer.setFlipped(compound, flipped);
+        DakiTagSerializer.setFlipped(itemStack, flipped);
         return itemStack;
     }
 }

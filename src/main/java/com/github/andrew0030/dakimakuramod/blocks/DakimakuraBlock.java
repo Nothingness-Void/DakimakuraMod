@@ -6,9 +6,9 @@ import com.github.andrew0030.dakimakuramod.dakimakura.serialize.DakiTagSerialize
 import com.github.andrew0030.dakimakuramod.items.DakimakuraItem;
 import com.github.andrew0030.dakimakuramod.registries.DMBlocks;
 import com.github.andrew0030.dakimakuramod.util.VoxelShapeTransformer;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
@@ -21,6 +21,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -43,6 +44,8 @@ import java.util.List;
 
 public class DakimakuraBlock extends BaseEntityBlock
 {
+    public static final MapCodec<DakimakuraBlock> CODEC = simpleCodec(DakimakuraBlock::new);
+
     // Wall Pillow Bounding Box
     private static final VoxelShape WALL_BOTTOM_SOUTH = Block.box(3, 1, 12, 13, 16, 16);
     private static final VoxelShape[] WALL_BOTTOM = VoxelShapeTransformer.of(WALL_BOTTOM_SOUTH).createHorizontalArray(Direction.SOUTH);
@@ -66,7 +69,13 @@ public class DakimakuraBlock extends BaseEntityBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit)
+    protected MapCodec<? extends BaseEntityBlock> codec()
+    {
+        return CODEC;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit)
     {
         // If the top Block of the Daki was interacted with, we offset the BlockPos to the bottom Block
         if (state.getValue(TOP))
@@ -83,7 +92,7 @@ public class DakimakuraBlock extends BaseEntityBlock
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player)
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player)
     {
         ItemStack stack = super.getCloneItemStack(state, target, level, pos, player);
         // If the Top part is picked we need to offset the position to get the BlockEntity from the Bottom part
@@ -98,9 +107,8 @@ public class DakimakuraBlock extends BaseEntityBlock
             Daki daki = dakiBlockEntity.getDaki();
             if (daki != null)
             {
-                stack.setTag(new CompoundTag());
-                DakiTagSerializer.serialize(daki, stack.getTag());
-                DakiTagSerializer.setFlipped(stack.getTag(), dakiBlockEntity.isFlipped());
+                DakiTagSerializer.serialize(daki, stack);
+                DakiTagSerializer.setFlipped(stack, dakiBlockEntity.isFlipped());
             }
         }
         return stack;
@@ -134,7 +142,7 @@ public class DakimakuraBlock extends BaseEntityBlock
     {
         // Sets the Daki for the block entity
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        Daki daki = DakiTagSerializer.deserialize(stack.getTag());
+        Daki daki = DakiTagSerializer.deserialize(stack);
         if (blockEntity instanceof DakimakuraBlockEntity dakiBlockEntity)
         {
             dakiBlockEntity.setDaki(daki);
@@ -162,8 +170,8 @@ public class DakimakuraBlock extends BaseEntityBlock
             {
                 Daki daki = dakiBlockEntity.getDaki();
                 if (daki != null)
-                    stack.setTag(DakiTagSerializer.serialize(daki));
-                DakiTagSerializer.setFlipped(stack.getTag(), dakiBlockEntity.isFlipped());
+                    DakiTagSerializer.serialize(daki, stack);
+                DakiTagSerializer.setFlipped(stack, dakiBlockEntity.isFlipped());
                 stacks.set(i, stack);
             }
         }
@@ -171,7 +179,7 @@ public class DakimakuraBlock extends BaseEntityBlock
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player)
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player)
     {
         if (state.getValue(TOP) && player.isCreative())
         {
@@ -186,7 +194,7 @@ public class DakimakuraBlock extends BaseEntityBlock
                 this.spawnDestroyParticles(level, player, offsetPos, offsetState);
             }
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class DakimakuraRenderer extends EntityRenderer<Dakimakura>
 {
-    private static final ResourceLocation TEXTURE_BLANK = new ResourceLocation(DakimakuraMod.MODID, "textures/obj/blank.png");
+    private static final ResourceLocation TEXTURE_BLANK = ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, "textures/obj/blank.png");
     private final DakimakuraModel dakimakuraModel;
 
     public DakimakuraRenderer(EntityRendererProvider.Context context)

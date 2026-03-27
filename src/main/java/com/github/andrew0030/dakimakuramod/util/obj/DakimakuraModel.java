@@ -17,7 +17,7 @@ import net.minecraft.util.Mth;
 public class DakimakuraModel
 {
     // Base Texture
-    private static final ResourceLocation TEXTURE_BLANK = new ResourceLocation(DakimakuraMod.MODID, "textures/obj/blank.png");
+    private static final ResourceLocation TEXTURE_BLANK = ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, "textures/obj/blank.png");
     // Model Paths
     private static final String MODEL_PATH = "models/obj/dakimakura.obj";
     private static final String MODEL_PATH_LOD = "models/obj/dakimakura-lod-%d.obj";
@@ -27,10 +27,10 @@ public class DakimakuraModel
 
     public DakimakuraModel()
     {
-        DAKIMAKURA_MODEL = ObjModel.loadModel(new ResourceLocation(DakimakuraMod.MODID, MODEL_PATH));
+        DAKIMAKURA_MODEL = ObjModel.loadModel(ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, MODEL_PATH));
         DAKIMAKURA_MODEL_LODS = new ObjModel[4];
         for (int i = 0; i < DAKIMAKURA_MODEL_LODS.length; i++)
-            DAKIMAKURA_MODEL_LODS[i] = ObjModel.loadModel(new ResourceLocation(DakimakuraMod.MODID, String.format(MODEL_PATH_LOD, i + 1)));
+            DAKIMAKURA_MODEL_LODS[i] = ObjModel.loadModel(ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, String.format(MODEL_PATH_LOD, i + 1)));
     }
 
     public void render(PoseStack stack, MultiBufferSource buffer, int packedLight, Daki daki, BlockPos pos)

@@ -71,36 +71,22 @@ public record ObjModel(Vector3f[] v, Vec2[] vt, Vector3f[] vn, Face[] faces)
 
     private void addVertex(PoseStack stack, VertexConsumer buffer, float x, float y, float z, float u, float v, int packedLight, float nx, float ny, float nz)
     {
-        pos(buffer, stack.last().pose(), x, y, z);
-        buffer.color(1F, 1F, 1F, 1F);
-        buffer.uv(u, v);
-        buffer.overlayCoords(OverlayTexture.NO_OVERLAY);
-        buffer.uv2(packedLight);
-        normal(buffer, stack.last().normal(), nx, ny, nz);
-        buffer.endVertex();
-    }
-
-    private void pos(VertexConsumer buffer, Matrix4f matrix4f, float x, float y, float z)
-    {
-        // Calling 'buffer.pos(matrix4f, x, y, z)' allocates a Vector4f
-        // To avoid allocating so many short-lived vectors we do the transform ourselves instead
+        Matrix4f matrix4f = stack.last().pose();
         float w = 1.0F;
         float tx = java.lang.Math.fma(matrix4f.m00(), x, java.lang.Math.fma(matrix4f.m10(), y, java.lang.Math.fma(matrix4f.m20(), z, matrix4f.m30() * w)));
         float ty = java.lang.Math.fma(matrix4f.m01(), x, java.lang.Math.fma(matrix4f.m11(), y, java.lang.Math.fma(matrix4f.m21(), z, matrix4f.m31() * w)));
         float tz = java.lang.Math.fma(matrix4f.m02(), x, java.lang.Math.fma(matrix4f.m12(), y, java.lang.Math.fma(matrix4f.m22(), z, matrix4f.m32() * w)));
 
-        buffer.vertex(tx, ty, tz);
-    }
-
-    private void normal(VertexConsumer bufferBuilder, Matrix3f matrix3f, float x, float y, float z)
-    {
-        // Calling 'bufferBuilder.normal(matrix3f, x, y, z)' allocates a Vector3f
-        // To avoid allocating so many short-lived vectors we do the transform ourselves instead
-        float nx = java.lang.Math.fma(matrix3f.m00(), x, java.lang.Math.fma(matrix3f.m10(), y, matrix3f.m20() * z));
-        float ny = java.lang.Math.fma(matrix3f.m01(), x, java.lang.Math.fma(matrix3f.m11(), y, matrix3f.m21() * z));
-        float nz = java.lang.Math.fma(matrix3f.m02(), x, Math.fma(matrix3f.m12(), y, matrix3f.m22() * z));
-
-        bufferBuilder.normal(nx, ny, nz);
+        Matrix3f matrix3f = stack.last().normal();
+        float transformedNx = java.lang.Math.fma(matrix3f.m00(), x, java.lang.Math.fma(matrix3f.m10(), y, matrix3f.m20() * z));
+        float transformedNy = java.lang.Math.fma(matrix3f.m01(), x, java.lang.Math.fma(matrix3f.m11(), y, matrix3f.m21() * z));
+        float transformedNz = java.lang.Math.fma(matrix3f.m02(), x, Math.fma(matrix3f.m12(), y, matrix3f.m22() * z));
+        buffer.addVertex(tx, ty, tz)
+                .setColor(255, 255, 255, 255)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(transformedNx, transformedNy, transformedNz);
     }
 
     public static ObjModel loadModel(ResourceLocation resourceLocation)

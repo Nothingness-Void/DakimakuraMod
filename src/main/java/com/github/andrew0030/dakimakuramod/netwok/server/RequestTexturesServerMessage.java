@@ -4,10 +4,7 @@ import com.github.andrew0030.dakimakuramod.DakimakuraMod;
 import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public record RequestTexturesServerMessage(Daki daki)
 {
@@ -24,22 +21,14 @@ public record RequestTexturesServerMessage(Daki daki)
         return new RequestTexturesServerMessage(daki);
     }
 
-    public static void handle(RequestTexturesServerMessage message, Supplier<NetworkEvent.Context> ctx)
+    public static void handle(RequestTexturesServerMessage message, CustomPayloadEvent.Context context)
     {
-        NetworkEvent.Context context = ctx.get();
         ServerPlayer serverPlayer = context.getSender();
         Daki daki = message.daki();
 
-        if(context.getDirection().getReceptionSide() == LogicalSide.SERVER)
+        if (context.isServerSide() && serverPlayer != null)
         {
-            context.enqueueWork(() ->
-            {
-                if(serverPlayer != null)
-                {
-                    DakimakuraMod.getTextureManagerCommon().onClientRequestTexture(serverPlayer, daki);
-                }
-            });
-            context.setPacketHandled(true);
+            DakimakuraMod.getTextureManagerCommon().onClientRequestTexture(serverPlayer, daki);
         }
     }
 }

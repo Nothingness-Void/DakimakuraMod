@@ -11,13 +11,11 @@ import com.github.andrew0030.dakimakuramod.netwok.client.util.ClientPacketHandle
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 public class SendDakiListClientMessage
 {
@@ -81,16 +79,11 @@ public class SendDakiListClientMessage
         return new SendDakiListClientMessage(packs);
     }
 
-    public static void handle(SendDakiListClientMessage message, Supplier<NetworkEvent.Context> ctx)
+    public static void handle(SendDakiListClientMessage message, CustomPayloadEvent.Context context)
     {
-        NetworkEvent.Context context = ctx.get();
-        if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT)
+        if (context.isClientSide())
         {
-            context.enqueueWork(() ->
-            {
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleSendDakiList(message));
-            });
-            context.setPacketHandled(true);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleSendDakiList(message));
         }
     }
 }

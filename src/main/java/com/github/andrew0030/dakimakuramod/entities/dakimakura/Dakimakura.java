@@ -33,12 +33,12 @@ public class Dakimakura extends Entity
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        this.getEntityData().define(FACING, 2); // 2: North in Direction
-        this.getEntityData().define(FLIPPED, false);
-        this.getEntityData().define(PACK_NAME, "");
-        this.getEntityData().define(DIR_NAME, "");
+        builder.define(FACING, 2); // 2: North in Direction
+        builder.define(FLIPPED, false);
+        builder.define(PACK_NAME, "");
+        builder.define(DIR_NAME, "");
     }
 
     @Override
@@ -89,8 +89,7 @@ public class Dakimakura extends Entity
         ItemStack itemStack = new ItemStack(DMBlocks.DAKIMAKURA.get());
         if (daki != null)
         {
-            itemStack.setTag(new CompoundTag());
-            DakiTagSerializer.serialize(daki, itemStack.getTag());
+            DakiTagSerializer.serialize(daki, itemStack);
             DakimakuraItem.setFlipped(itemStack, this.isFlipped());
         }
         ItemEntity itemEntity = new ItemEntity(this.level(), position().x(), position().y(), position().z(), itemStack);

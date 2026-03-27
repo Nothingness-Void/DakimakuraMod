@@ -2,8 +2,13 @@ package com.github.andrew0030.dakimakuramod.dakimakura.serialize;
 
 import com.github.andrew0030.dakimakuramod.DakimakuraMod;
 import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+
+import java.util.function.Consumer;
 
 /**
  * Helper class to more easily handle storing and retrieving values, to and from a {@link CompoundTag}
@@ -58,6 +63,18 @@ public final class DakiTagSerializer
         return null;
     }
 
+    public static void serialize(Daki daki, ItemStack stack)
+    {
+        if (stack == null)
+            return;
+        DakiTagSerializer.updateTag(stack, compound -> DakiTagSerializer.serialize(daki, compound));
+    }
+
+    public static Daki deserialize(ItemStack stack)
+    {
+        return DakiTagSerializer.deserialize(DakiTagSerializer.getTag(stack));
+    }
+
     /**
      * Sets the given value to be the "Flipped" value on a given {@link CompoundTag}
      * @param compound The {@link CompoundTag} that will receive the "Flipped" Tag
@@ -80,5 +97,43 @@ public final class DakiTagSerializer
         if (compound == null)
             return false;
         return compound.getBoolean(FLIPPED_KEY);
+    }
+
+    public static void setFlipped(ItemStack stack, boolean flipped)
+    {
+        if (stack == null)
+            return;
+        DakiTagSerializer.updateTag(stack, compound -> DakiTagSerializer.setFlipped(compound, flipped));
+    }
+
+    public static boolean isFlipped(ItemStack stack)
+    {
+        return DakiTagSerializer.isFlipped(DakiTagSerializer.getTag(stack));
+    }
+
+    public static boolean hasTag(ItemStack stack)
+    {
+        return stack != null && !stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).isEmpty();
+    }
+
+    public static CompoundTag getTag(ItemStack stack)
+    {
+        if (stack == null)
+            return null;
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+    }
+
+    public static void setTag(ItemStack stack, CompoundTag compound)
+    {
+        if (stack == null)
+            return;
+        CustomData.set(DataComponents.CUSTOM_DATA, stack, compound);
+    }
+
+    public static void updateTag(ItemStack stack, Consumer<CompoundTag> updater)
+    {
+        if (stack == null)
+            return;
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, updater);
     }
 }

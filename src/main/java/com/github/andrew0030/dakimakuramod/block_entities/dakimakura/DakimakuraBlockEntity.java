@@ -6,6 +6,7 @@ import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
 import com.github.andrew0030.dakimakuramod.dakimakura.serialize.DakiTagSerializer;
 import com.github.andrew0030.dakimakuramod.registries.DMBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
@@ -35,9 +36,9 @@ public class DakimakuraBlockEntity extends BlockEntity
 
     /** Used to synchronize the TileEntity with the client when the chunk it is in is loaded */
     @Override
-    public CompoundTag getUpdateTag()
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider)
     {
-        CompoundTag compound = new CompoundTag();
+        CompoundTag compound = super.getUpdateTag(provider);
         this.saveToNBT(compound);
         return compound;
     }
@@ -51,16 +52,16 @@ public class DakimakuraBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compound)
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider provider)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, provider);
         this.saveToNBT(compound);
     }
 
     @Override
-    public void load(CompoundTag compound)
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider provider)
     {
-        super.load(compound);
+        super.loadAdditional(compound, provider);
         this.loadFromNBT(compound);
     }
 

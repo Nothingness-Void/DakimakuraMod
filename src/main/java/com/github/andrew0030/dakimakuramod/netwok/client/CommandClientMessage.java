@@ -3,11 +3,8 @@ package com.github.andrew0030.dakimakuramod.netwok.client;
 import com.github.andrew0030.dakimakuramod.netwok.client.util.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public record CommandClientMessage(CommandType commandType)
 {
@@ -21,16 +18,11 @@ public record CommandClientMessage(CommandType commandType)
         return new CommandClientMessage(CommandType.values()[buf.readByte()]);
     }
 
-    public static void handle(CommandClientMessage message, Supplier<NetworkEvent.Context> ctx)
+    public static void handle(CommandClientMessage message, CustomPayloadEvent.Context context)
     {
-        NetworkEvent.Context context = ctx.get();
-        if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT)
+        if (context.isClientSide())
         {
-            context.enqueueWork(() ->
-            {
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleCommandClient(message));
-            });
-            context.setPacketHandled(true);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleCommandClient(message));
         }
     }
 

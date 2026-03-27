@@ -13,5 +13,5 @@ public class DMEntities
 {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, DakimakuraMod.MODID);
 
-    public static final RegistryObject<EntityType<Dakimakura>> DAKIMAKURA = ENTITIES.register("dakimakura", () -> EntityType.Builder.of(Dakimakura::new, MobCategory.MISC).sized(3.0F, 0.25F).clientTrackingRange(10).build(new ResourceLocation(DakimakuraMod.MODID, "dakimakura").toString()));
+    public static final RegistryObject<EntityType<Dakimakura>> DAKIMAKURA = ENTITIES.register("dakimakura", () -> EntityType.Builder.of(Dakimakura::new, MobCategory.MISC).sized(3.0F, 0.25F).clientTrackingRange(10).build(ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, "dakimakura").toString()));
 }

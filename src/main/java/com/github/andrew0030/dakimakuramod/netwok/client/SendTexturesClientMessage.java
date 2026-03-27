@@ -5,11 +5,8 @@ import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
 import com.github.andrew0030.dakimakuramod.netwok.client.util.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public record SendTexturesClientMessage(Daki daki, int sizeFront, int sizeBack, int packetsNeeded, int idx, byte[] data)
 {
@@ -47,16 +44,11 @@ public record SendTexturesClientMessage(Daki daki, int sizeFront, int sizeBack, 
         return new SendTexturesClientMessage(daki, sizeFront, sizeBack, packetsNeeded, idx, data);
     }
 
-    public static void handle(SendTexturesClientMessage message, Supplier<NetworkEvent.Context> ctx)
+    public static void handle(SendTexturesClientMessage message, CustomPayloadEvent.Context context)
     {
-        NetworkEvent.Context context = ctx.get();
-        if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT)
+        if (context.isClientSide())
         {
-            context.enqueueWork(() ->
-            {
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleSendTextures(message));
-            });
-            context.setPacketHandled(true);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleSendTextures(message));
         }
     }
 }

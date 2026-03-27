@@ -19,6 +19,6 @@ public class DMItems
 
     public static void registerItemProperties()
     {
-        ItemProperties.register(DAKIMAKURA_DESIGN.get(), new ResourceLocation(DakimakuraMod.MODID, "unlocked"), (stack, level, entity, seed) -> DakiTagSerializer.deserialize(stack.getTag()) == null ? 0.0F : 1.0F);
+        ItemProperties.register(DAKIMAKURA_DESIGN.get(), ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, "unlocked"), (stack, level, entity, seed) -> DakiTagSerializer.deserialize(stack) == null ? 0.0F : 1.0F);
     }
 }
