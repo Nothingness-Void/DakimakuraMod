@@ -9,54 +9,64 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mc_version: "1.20.1"
+            branch: "main"
+            java_version: "17"
+          - mc_version: "1.21.1"
+            branch: "1.21"
+            java_version: "21"
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up JDK
-      uses: actions/setup-java@v2
+    - name: Checkout repository (${{ matrix.mc_version }})
+      uses: actions/checkout@v4
       with:
-        java-version: '17'
+        ref: ${{ matrix.branch }}
+
+    - name: Set up JDK ${{ matrix.java_version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java_version }}
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
 
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v2
+    - name: Upload build artifacts (${{ matrix.mc_version }})
+      uses: actions/upload-artifact@v4
       with:
-        name: DakimakuraMod
+        name: DakimakuraMod-${{ matrix.mc_version }}
         path: build/libs/*.jar
+        if-no-files-found: error
 
   release:
     needs: build
     runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    if: startsWith(github.ref, 'refs/tags/')
 
-    - name: Download build artifacts
-      uses: actions/download-artifact@v2
+    steps:
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4.1.8
       with:
-        name: DakimakuraMod
+        path: artifacts/
 
     - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+        generate_release_notes: true
+        files: artifacts/**/*.jar
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/libs/*.jar
-        asset_name: DakimakuraMod.jar
-        asset_content_type: application/java-archive
