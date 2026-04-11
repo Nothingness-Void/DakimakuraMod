@@ -4,6 +4,7 @@ import com.github.andrew0030.dakimakuramod.dakimakura.client.DakiTextureManagerC
 import com.github.andrew0030.dakimakuramod.entities.dakimakura.DakimakuraRenderer;
 import com.github.andrew0030.dakimakuramod.registries.DMBlockEntities;
 import com.github.andrew0030.dakimakuramod.registries.DMEntities;
+import com.github.andrew0030.dakimakuramod.registries.DMItems;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
 import net.minecraftforge.common.MinecraftForge;
@@ -32,6 +33,7 @@ public class DakimakuraModClient
 //        DakimakuraModClient.dakiTextureManagerClient = new DakiTextureManagerClient();
 
         event.enqueueWork(() -> {
+            DMItems.registerItemProperties();
             DMBlockEntities.registerBlockEntityRenderers();
             // Gets the max size an image can be
             DakimakuraModClient.maxGpuTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
