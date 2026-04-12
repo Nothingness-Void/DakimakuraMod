@@ -20,3 +20,6 @@ build
 # other
 eclipse
 run
+
+# local run logs
+gradle-runClient-*.log
