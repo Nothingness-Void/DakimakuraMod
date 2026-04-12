@@ -5,6 +5,7 @@ import com.github.andrew0030.dakimakuramod.dakimakura.DakiExtractor;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiManager;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiTextureManagerCommon;
 import com.github.andrew0030.dakimakuramod.events.LoggedInEvent;
+import com.github.andrew0030.dakimakuramod.events.MobDropEvents;
 import com.github.andrew0030.dakimakuramod.netwok.DMNetwork;
 import com.github.andrew0030.dakimakuramod.registries.*;
 import com.mojang.logging.LogUtils;
@@ -38,6 +39,7 @@ public class DakimakuraMod
         eventBus.addListener(this::serverStarting);
         eventBus.addListener(this::serverStopping);
         eventBus.register(new LoggedInEvent());
+        eventBus.register(new MobDropEvents());
         if (FMLEnvironment.dist == Dist.CLIENT)
             DakimakuraModClient.init(modEventBus);
 
@@ -46,6 +48,7 @@ public class DakimakuraMod
         DMEntities.ENTITIES.register(modEventBus);
         DMBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
         DMCreativeTab.TABS.register(modEventBus);
+        DMRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
     }
 
     private void commonSetup(FMLCommonSetupEvent event)
