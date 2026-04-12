@@ -45,11 +45,15 @@ https://github.com/Nothingness-Void/DakimakuraMod/releases
 
 现代版本原作者为 andrew0030。更早期的原作者与所有者为 RiskyKen。Vanilla Mobs 美术与新抱枕模型由 Apprentice Necromancer 制作。旧抱枕模型由 ORCS004 制作。翻译贡献者包括 MikaPikaaa、[//972]、Ethan、TROU2004、TartaricAcid 和 _Hoppang_。
 
-### 许可证
+### 许可证与上游声明
 
-当前版本基于 GNU Lesser General Public License v3.0 许可发布。
+本仓库保留并遵守上游项目的许可声明：
 
-RiskyKen 制作的 1.12.2 及更早版本基于 Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License 许可发布。
+- 当前版本代码基于 [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) 许可发布。
+- RiskyKen 制作的 1.12.2 及更早版本，以及相关旧内容，基于 [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License](https://creativecommons.org/licenses/by-nc-sa/3.0/) 许可发布。
+- 使用或再分发本 fork 时，请保留原作者与贡献者署名，并遵守对应许可证条款。
+
+[![CC BY-NC-SA 3.0](https://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png)](https://creativecommons.org/licenses/by-nc-sa/3.0/)
 
 ---
 
@@ -98,8 +102,12 @@ This fork is maintained by Nothingness-Void.
 
 Original modern Dakimakura Mod development by andrew0030. Former mod author and owner: RiskyKen. Vanilla Mobs art and new Dakimakura models by Apprentice Necromancer. Old Dakimakura models by ORCS004. Localisers include MikaPikaaa, [//972], Ethan, TROU2004, TartaricAcid, and _Hoppang_.
 
-### License
+### License And Upstream Notice
 
-Current versions are licensed under the GNU Lesser General Public License v3.0.
+This repository retains and follows the upstream project license notices:
 
-Dakimakura Mod 1.12.2 and older, originally by RiskyKen, are licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+- Current-version code is licensed under the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html).
+- Dakimakura Mod 1.12.2 and older, originally by RiskyKen, and related legacy content are licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+- When using or redistributing this fork, keep the original author and contributor attribution and follow the applicable license terms.
+
+[![CC BY-NC-SA 3.0](https://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png)](https://creativecommons.org/licenses/by-nc-sa/3.0/)
