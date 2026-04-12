@@ -1,0 +1,119 @@
+name: Build and Release DakimakuraMod
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. v1.0.0 or v1.0.0-beta.1). Leave empty to skip release.'
+        required: false
+        default: ''
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - loader: "forge"
+            mc_version: "1.20.1"
+            branch: "master"
+            java_version: "17"
+          - loader: "forge"
+            mc_version: "1.21.1"
+            branch: "codex/port-1.21"
+            java_version: "21"
+          - loader: "neoforge"
+            mc_version: "1.21.1"
+            branch: "codex/neoforge-1.21.1"
+            java_version: "21"
+
+    steps:
+    - name: Checkout repository (${{ matrix.loader }} ${{ matrix.mc_version }})
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.branch }}
+
+    - name: Set up JDK ${{ matrix.java_version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java_version }}
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Rename JAR with MC version and loader (${{ matrix.loader }} ${{ matrix.mc_version }})
+      shell: bash
+      run: |
+        set -euo pipefail
+        shopt -s nullglob
+        jars=(build/libs/*.jar)
+        if [ ${#jars[@]} -eq 0 ]; then
+          echo "No jar found in build/libs"
+          exit 1
+        fi
+        for jar in "${jars[@]}"; do
+          base="$(basename "$jar" .jar)"
+          mv "$jar" "build/libs/${base}+mc${{ matrix.mc_version }}-${{ matrix.loader }}.jar"
+        done
+        ls -lah build/libs
+
+    - name: Upload build artifacts (${{ matrix.loader }} ${{ matrix.mc_version }})
+      uses: actions/upload-artifact@v4
+      with:
+        name: DakimakuraMod-${{ matrix.mc_version }}-${{ matrix.loader }}
+        path: build/libs/*.jar
+        if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.version != '')
+
+    steps:
+    - name: Resolve release tag
+      id: tag
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          version="${{ inputs.version }}"
+          if ! echo "$version" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+([-+].+)?$'; then
+            echo "Error: version '$version' does not match the required format v<major>.<minor>.<patch> (e.g. v1.0.0 or v1.0.0-beta.1)"
+            exit 1
+          fi
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+        else
+          echo "value=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4.1.8
+      with:
+        path: artifacts/
+
+    - name: Show downloaded files
+      run: find artifacts -type f -maxdepth 5 | sort
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.value }}
+        name: Release ${{ steps.tag.outputs.value }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: artifacts/**/*.jar
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
