@@ -11,7 +11,8 @@
 - Minecraft Forge 1.20.1 维护与修复
 - Dedicated Server 服务端兼容性修复
 - Forge 1.21.1 移植，位于 `codex/port-1.21` 分支
-- 使用 GitHub Actions 同时构建 1.20.1 和 1.21.1 版本
+- NeoForge 1.21.1 移植，位于 `codex/neoforge-1.21.1` 分支
+- 使用 GitHub Actions 同时构建 Forge 1.20.1、Forge 1.21.1 和 NeoForge 1.21.1 版本
 
 ### 下载
 
@@ -19,15 +20,19 @@
 
 https://github.com/Nothingness-Void/DakimakuraMod/releases
 
-`v1.0.0-fix` 发布包含：
+`v1.0.1` 发布包含：
 
-- `dakimakuramod-1.0.0+mc1.20.1.jar`
-- `dakimakuramod-1.0.0+mc1.21.1.jar`
+- `dakimakuramod-1.0.0+mc1.20.1-forge.jar`
+- `dakimakuramod-1.0.0+mc1.21.1-forge.jar`
+- `dakimakuramod-1.0.0+mc1.21.1-neoforge.jar`
+
+请按你的服务端 loader 下载对应 jar。Forge jar 与 NeoForge jar 不能混用；客户端与服务端也应使用同一 loader 与同一 Minecraft 版本的 jar。
 
 ### 分支
 
 - `master`：Minecraft Forge 1.20.1
 - `codex/port-1.21`：Minecraft Forge 1.21.1
+- `codex/neoforge-1.21.1`：Minecraft NeoForge 1.21.1
 
 ### 构建
 
@@ -68,7 +73,8 @@ The mod allows players to place Dakimakuras on beds and around the world, while 
 - Minecraft Forge 1.20.1 maintenance and fixes
 - Dedicated server compatibility fixes
 - Forge 1.21.1 port on the `codex/port-1.21` branch
-- GitHub Actions builds for both 1.20.1 and 1.21.1
+- NeoForge 1.21.1 port on the `codex/neoforge-1.21.1` branch
+- GitHub Actions builds for Forge 1.20.1, Forge 1.21.1, and NeoForge 1.21.1
 
 ### Downloads
 
@@ -76,15 +82,19 @@ Releases are published here:
 
 https://github.com/Nothingness-Void/DakimakuraMod/releases
 
-The `v1.0.0-fix` release includes:
+The `v1.0.1` release includes:
 
-- `dakimakuramod-1.0.0+mc1.20.1.jar`
-- `dakimakuramod-1.0.0+mc1.21.1.jar`
+- `dakimakuramod-1.0.0+mc1.20.1-forge.jar`
+- `dakimakuramod-1.0.0+mc1.21.1-forge.jar`
+- `dakimakuramod-1.0.0+mc1.21.1-neoforge.jar`
+
+Download the jar that matches your server loader. Forge jars and NeoForge jars are not interchangeable; clients and servers should use the same loader and the same Minecraft-version jar.
 
 ### Branches
 
 - `master`: Minecraft Forge 1.20.1
 - `codex/port-1.21`: Minecraft Forge 1.21.1
+- `codex/neoforge-1.21.1`: Minecraft NeoForge 1.21.1
 
 ### Building
 

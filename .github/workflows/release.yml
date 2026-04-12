@@ -18,15 +18,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - mc_version: "1.20.1"
+          - loader: "forge"
+            mc_version: "1.20.1"
             branch: "master"
             java_version: "17"
-          - mc_version: "1.21.1"
+          - loader: "forge"
+            mc_version: "1.21.1"
             branch: "codex/port-1.21"
+            java_version: "21"
+          - loader: "neoforge"
+            mc_version: "1.21.1"
+            branch: "codex/neoforge-1.21.1"
             java_version: "21"
 
     steps:
-    - name: Checkout repository (${{ matrix.mc_version }})
+    - name: Checkout repository (${{ matrix.loader }} ${{ matrix.mc_version }})
       uses: actions/checkout@v4
       with:
         ref: ${{ matrix.branch }}
@@ -46,7 +52,7 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Rename JAR with MC version (${{ matrix.mc_version }})
+    - name: Rename JAR with MC version and loader (${{ matrix.loader }} ${{ matrix.mc_version }})
       shell: bash
       run: |
         set -euo pipefail
@@ -58,14 +64,14 @@ jobs:
         fi
         for jar in "${jars[@]}"; do
           base="$(basename "$jar" .jar)"
-          mv "$jar" "build/libs/${base}+mc${{ matrix.mc_version }}.jar"
+          mv "$jar" "build/libs/${base}+mc${{ matrix.mc_version }}-${{ matrix.loader }}.jar"
         done
         ls -lah build/libs
 
-    - name: Upload build artifacts (${{ matrix.mc_version }})
+    - name: Upload build artifacts (${{ matrix.loader }} ${{ matrix.mc_version }})
       uses: actions/upload-artifact@v4
       with:
-        name: DakimakuraMod-${{ matrix.mc_version }}
+        name: DakimakuraMod-${{ matrix.mc_version }}-${{ matrix.loader }}
         path: build/libs/*.jar
         if-no-files-found: error
 
