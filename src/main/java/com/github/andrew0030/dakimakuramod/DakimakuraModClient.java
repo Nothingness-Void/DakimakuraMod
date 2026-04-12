@@ -6,10 +6,10 @@ import com.github.andrew0030.dakimakuramod.registries.DMBlockEntities;
 import com.github.andrew0030.dakimakuramod.registries.DMEntities;
 import com.github.andrew0030.dakimakuramod.registries.DMItems;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 
@@ -24,7 +24,7 @@ public class DakimakuraModClient
         modEventBus.addListener(DakimakuraModClient::setupClient);
         modEventBus.addListener(DakimakuraModClient::registerEntityRenderers);
 
-        IEventBus eventBus = MinecraftForge.EVENT_BUS;
+        IEventBus eventBus = NeoForge.EVENT_BUS;
         eventBus.register(dakiTextureManagerClient = new DakiTextureManagerClient());
     }
 

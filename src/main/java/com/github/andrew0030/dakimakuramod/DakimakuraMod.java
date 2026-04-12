@@ -8,17 +8,16 @@ import com.github.andrew0030.dakimakuramod.events.LoggedInEvent;
 import com.github.andrew0030.dakimakuramod.netwok.DMNetwork;
 import com.github.andrew0030.dakimakuramod.registries.*;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
 @Mod(DakimakuraMod.MODID)
@@ -29,12 +28,12 @@ public class DakimakuraMod
     private static DakiManager dakiManager;
     private static DakiTextureManagerCommon dakiTextureManagerCommon;
 
-    public DakimakuraMod()
+    public DakimakuraMod(IEventBus modEventBus)
     {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        IEventBus eventBus = MinecraftForge.EVENT_BUS;
+        IEventBus eventBus = NeoForge.EVENT_BUS;
 
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(DMNetwork::registerMessages);
         eventBus.addListener(this::registerCommands);
         eventBus.addListener(this::serverStarting);
         eventBus.addListener(this::serverStopping);
@@ -57,8 +56,6 @@ public class DakimakuraMod
         DakimakuraMod.dakiTextureManagerCommon = new DakiTextureManagerCommon();
         // Loads the default DakiPack/s into the dakimakura-mod folder if needed
         DakiExtractor.extractDakis();
-        // Registers Network Messages
-        DMNetwork.registerMessages();
     }
 
     private void registerCommands(RegisterCommandsEvent event)

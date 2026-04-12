@@ -3,8 +3,8 @@ package com.github.andrew0030.dakimakuramod.events;
 import com.github.andrew0030.dakimakuramod.netwok.NetworkUtil;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.slf4j.Logger;
 
 public class LoggedInEvent

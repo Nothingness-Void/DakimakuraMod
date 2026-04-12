@@ -87,10 +87,9 @@ public class DakimakuraBlockEntity extends BlockEntity
         this.flipped = DakiTagSerializer.isFlipped(compound);
     }
 
-    @Override
     public AABB getRenderBoundingBox()
     {
-        AABB aabb = super.getRenderBoundingBox();
+        AABB aabb = new AABB(this.worldPosition);
         BlockState state = this.getBlockState();
         if(state.getValue(DakimakuraBlock.TOP))
             return aabb;

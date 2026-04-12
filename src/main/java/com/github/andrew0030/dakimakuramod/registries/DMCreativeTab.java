@@ -7,8 +7,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +17,7 @@ public class DMCreativeTab
 {
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DakimakuraMod.MODID);
 
-    public static final RegistryObject<CreativeModeTab> TTC_TAB = TABS.register("tab", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TTC_TAB = TABS.register("tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup." + DakimakuraMod.MODID + ".tab"))
             .icon(() -> new ItemStack(DMBlocks.DAKIMAKURA.get()))
             .displayItems((params, output) -> {
@@ -38,6 +38,6 @@ public class DMCreativeTab
     /** Makes Creative Tabs Rebuild */
     public static void reloadTabContents()
     {
-        // Forge 1.21.1 no longer exposes a simple server-safe creative tab cache reset hook.
+        // Minecraft 1.21.1 no longer exposes a simple server-safe creative tab cache reset hook here.
     }
 }

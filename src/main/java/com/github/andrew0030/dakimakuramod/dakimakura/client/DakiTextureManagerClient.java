@@ -6,10 +6,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.TickEvent.ClientTickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.concurrent.*;
@@ -57,28 +55,25 @@ public class DakiTextureManagerClient implements RemovalListener<Daki, DakiTextu
     }
 
     @SubscribeEvent
-    public void onClientTick(ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Post event)
     {
-        if (event.side == LogicalSide.CLIENT && event.type == TickEvent.Type.CLIENT && event.phase == TickEvent.Phase.END)
+        this.textureCache.cleanUp();
+        Future<DakiImageData> futureDakiImageData = this.textureCompletion.poll();
+        if (futureDakiImageData != null)
         {
-            this.textureCache.cleanUp();
-            Future<DakiImageData> futureDakiImageData = this.textureCompletion.poll();
-            if (futureDakiImageData != null)
-            {
-                try {
-                    DakiImageData dakiImageData = futureDakiImageData.get();
-                    if (dakiImageData != null)
-                    {
-                        DakiTexture dakiTexture = this.textureCache.getIfPresent(dakiImageData.getDaki());
-                        if (dakiTexture != null)
-                            dakiTexture.createImageBuffer(dakiImageData);
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+            try {
+                DakiImageData dakiImageData = futureDakiImageData.get();
+                if (dakiImageData != null)
+                {
+                    DakiTexture dakiTexture = this.textureCache.getIfPresent(dakiImageData.getDaki());
+                    if (dakiTexture != null)
+                        dakiTexture.createImageBuffer(dakiImageData);
                 }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
-            this.deleteTextures();
         }
+        this.deleteTextures();
     }
 
     /** Used to clear the {@link DakiTextureManagerClient} cache. */

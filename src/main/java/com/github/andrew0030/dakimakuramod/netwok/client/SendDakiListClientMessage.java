@@ -10,18 +10,27 @@ import com.github.andrew0030.dakimakuramod.dakimakura.serialize.DakiJsonSerializ
 import com.github.andrew0030.dakimakuramod.netwok.client.util.ClientPacketHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.network.CustomPayloadEvent;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 
-public class SendDakiListClientMessage
+public class SendDakiListClientMessage implements CustomPacketPayload
 {
+    public static final Type<SendDakiListClientMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, "send_daki_list_client"));
+    public static final StreamCodec<FriendlyByteBuf, SendDakiListClientMessage> STREAM_CODEC = StreamCodec.of((buf, message) -> message.serialize(buf), SendDakiListClientMessage::deserialize);
     private static final Logger LOGGER = LogUtils.getLogger();
     private final DakiManager dakiManager;
     public ArrayList<IDakiPack> packs;
+
+    @Override
+    public Type<SendDakiListClientMessage> type()
+    {
+        return TYPE;
+    }
 
     public SendDakiListClientMessage()
     {
@@ -79,11 +88,8 @@ public class SendDakiListClientMessage
         return new SendDakiListClientMessage(packs);
     }
 
-    public static void handle(SendDakiListClientMessage message, CustomPayloadEvent.Context context)
+    public static void handle(SendDakiListClientMessage message, IPayloadContext context)
     {
-        if (context.isClientSide())
-        {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleSendDakiList(message));
-        }
+        ClientPacketHandler.handleSendDakiList(message);
     }
 }

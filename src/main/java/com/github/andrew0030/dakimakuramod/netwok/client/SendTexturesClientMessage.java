@@ -4,12 +4,22 @@ import com.github.andrew0030.dakimakuramod.DakimakuraMod;
 import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
 import com.github.andrew0030.dakimakuramod.netwok.client.util.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.network.CustomPayloadEvent;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SendTexturesClientMessage(Daki daki, int sizeFront, int sizeBack, int packetsNeeded, int idx, byte[] data)
+public record SendTexturesClientMessage(Daki daki, int sizeFront, int sizeBack, int packetsNeeded, int idx, byte[] data) implements CustomPacketPayload
 {
+    public static final Type<SendTexturesClientMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DakimakuraMod.MODID, "send_textures_client"));
+    public static final StreamCodec<FriendlyByteBuf, SendTexturesClientMessage> STREAM_CODEC = StreamCodec.of((buf, message) -> message.serialize(buf), SendTexturesClientMessage::deserialize);
+
+    @Override
+    public Type<SendTexturesClientMessage> type()
+    {
+        return TYPE;
+    }
+
     public void serialize(FriendlyByteBuf buf)
     {
         buf.writeUtf(daki.getPackDirectoryName() + ":" + daki.getDakiDirectoryName());
@@ -44,11 +54,8 @@ public record SendTexturesClientMessage(Daki daki, int sizeFront, int sizeBack, 
         return new SendTexturesClientMessage(daki, sizeFront, sizeBack, packetsNeeded, idx, data);
     }
 
-    public static void handle(SendTexturesClientMessage message, CustomPayloadEvent.Context context)
+    public static void handle(SendTexturesClientMessage message, IPayloadContext context)
     {
-        if (context.isClientSide())
-        {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleSendTextures(message));
-        }
+        ClientPacketHandler.handleSendTextures(message);
     }
 }
