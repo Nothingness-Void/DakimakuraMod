@@ -20,11 +20,13 @@
 
 https://github.com/Nothingness-Void/DakimakuraMod/releases
 
-`v1.0.1` 发布包含：
+发布资产命名格式：
 
-- `dakimakuramod-1.0.0+mc1.20.1-forge.jar`
-- `dakimakuramod-1.0.0+mc1.21.1-forge.jar`
-- `dakimakuramod-1.0.0+mc1.21.1-neoforge.jar`
+- `dakimakuramod-<mod_version>+mc1.20.1-forge.jar`
+- `dakimakuramod-<mod_version>+mc1.21.1-forge.jar`
+- `dakimakuramod-<mod_version>+mc1.21.1-neoforge.jar`
+
+正式发布时，`<mod_version>` 会与 release tag 去掉 `v` 后的版本号一致，例如 `v1.1.0` 会构建 `dakimakuramod-1.1.0+...jar`。
 
 请按你的服务端 loader 下载对应 jar。Forge jar 与 NeoForge jar 不能混用；客户端与服务端也应使用同一 loader 与同一 Minecraft 版本的 jar。
 
@@ -82,11 +84,13 @@ Releases are published here:
 
 https://github.com/Nothingness-Void/DakimakuraMod/releases
 
-The `v1.0.1` release includes:
+Release asset naming format:
 
-- `dakimakuramod-1.0.0+mc1.20.1-forge.jar`
-- `dakimakuramod-1.0.0+mc1.21.1-forge.jar`
-- `dakimakuramod-1.0.0+mc1.21.1-neoforge.jar`
+- `dakimakuramod-<mod_version>+mc1.20.1-forge.jar`
+- `dakimakuramod-<mod_version>+mc1.21.1-forge.jar`
+- `dakimakuramod-<mod_version>+mc1.21.1-neoforge.jar`
+
+For official releases, `<mod_version>` matches the release tag without the leading `v`; for example, `v1.1.0` builds `dakimakuramod-1.1.0+...jar`.
 
 Download the jar that matches your server loader. Forge jars and NeoForge jars are not interchangeable; clients and servers should use the same loader and the same Minecraft-version jar.
 
