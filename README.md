@@ -36,6 +36,17 @@ https://github.com/Nothingness-Void/DakimakuraMod/releases
 - `codex/port-1.21`：Minecraft Forge 1.21.1
 - `codex/neoforge-1.21.1`：Minecraft NeoForge 1.21.1
 
+### 配置
+
+首次启动后会在 `<gameDir>/config/` 下生成两个配置文件，可在游戏中 **Mods → Dakimakura Mod → Config** 直接编辑，保存即生效。
+
+- `dakimakuramod-common.toml`：服务端下发图片的尺寸上限、JPEG 质量、服务端内存 / 磁盘缓存开关与上限
+- `dakimakuramod-client.toml`：客户端显存缓存时长、本地磁盘缓存上限
+
+默认值对一般服务器都合适，不改也能用。带宽紧张可以把 `maxTransferHeight` 调到 `1024` 或把 `jpegQuality` 调到 `0.70`；显存有限可以把客户端 `memoryCacheMinutes` 降到 `10` 以内。
+
+详细说明、每一项的作用、推荐调整方向、缓存目录结构与哈希保证：[详细配置参考（中文）](docs/wiki/Configuration-zh.md)。
+
 ### 构建
 
 使用 Gradle Wrapper：
@@ -99,6 +110,17 @@ Download the jar that matches your server loader. Forge jars and NeoForge jars a
 - `master`: Minecraft Forge 1.20.1
 - `codex/port-1.21`: Minecraft Forge 1.21.1
 - `codex/neoforge-1.21.1`: Minecraft NeoForge 1.21.1
+
+### Configuration
+
+On first launch the mod generates two config files under `<gameDir>/config/`. They can be edited live via **Mods → Dakimakura Mod → Config** in-game.
+
+- `dakimakuramod-common.toml`: server-side texture transfer height, JPEG quality, memory / disk cache toggles and size caps
+- `dakimakuramod-client.toml`: client-side VRAM cache lifetime and local disk cache cap
+
+Defaults work for most servers. If bandwidth is tight, lower `maxTransferHeight` to `1024` or drop `jpegQuality` to `0.70`. If VRAM is tight, drop the client's `memoryCacheMinutes` to 10 or below.
+
+For every option's behaviour, recommended tweaks, cache layout and hashing guarantees, see the [full configuration reference (English)](docs/wiki/Configuration.md).
 
 ### Building
 
