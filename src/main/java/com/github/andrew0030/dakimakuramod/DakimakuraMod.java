@@ -1,6 +1,7 @@
 package com.github.andrew0030.dakimakuramod;
 
 import com.github.andrew0030.dakimakuramod.commands.DakiCommand;
+import com.github.andrew0030.dakimakuramod.config.DMConfig;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiExtractor;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiManager;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiTextureManagerCommon;
@@ -17,6 +18,7 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -34,6 +36,11 @@ public class DakimakuraMod
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus eventBus = MinecraftForge.EVENT_BUS;
+
+        // Register configs first so later lifecycle steps see loaded values.
+        net.minecraftforge.fml.ModLoadingContext loadingContext = net.minecraftforge.fml.ModLoadingContext.get();
+        loadingContext.registerConfig(ModConfig.Type.COMMON, DMConfig.COMMON_SPEC);
+        loadingContext.registerConfig(ModConfig.Type.CLIENT, DMConfig.CLIENT_SPEC);
 
         modEventBus.addListener(this::commonSetup);
         eventBus.addListener(this::registerCommands);

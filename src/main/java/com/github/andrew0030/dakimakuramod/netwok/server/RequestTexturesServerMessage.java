@@ -19,8 +19,8 @@ public record RequestTexturesServerMessage(Daki daki)
     public static RequestTexturesServerMessage deserialize(FriendlyByteBuf buf)
     {
         String path = buf.readUtf(Short.MAX_VALUE);
-        String[] pathSplit = path.split(":");
-        Daki daki = DakimakuraMod.getDakimakuraManager().getDakiFromMap(pathSplit[0], pathSplit[1]);
+        String[] pathSplit = path.split(":", 2);
+        Daki daki = pathSplit.length == 2 ? DakimakuraMod.getDakimakuraManager().getDakiFromMap(pathSplit[0], pathSplit[1]) : null;
         return new RequestTexturesServerMessage(daki);
     }
 
@@ -34,7 +34,7 @@ public record RequestTexturesServerMessage(Daki daki)
         {
             context.enqueueWork(() ->
             {
-                if(serverPlayer != null)
+                if(serverPlayer != null && daki != null)
                 {
                     DakimakuraMod.getTextureManagerCommon().onClientRequestTexture(serverPlayer, daki);
                 }

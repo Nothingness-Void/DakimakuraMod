@@ -1,5 +1,6 @@
 package com.github.andrew0030.dakimakuramod.dakimakura.client;
 
+import com.github.andrew0030.dakimakuramod.config.DMConfig;
 import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiImageData;
 import com.google.common.cache.Cache;
@@ -25,9 +26,8 @@ public class DakiTextureManagerClient implements RemovalListener<Daki, DakiTextu
 
     public DakiTextureManagerClient()
     {
-//        this.textureCache = CacheBuilder.newBuilder().removalListener(this).expireAfterAccess(ConfigHandler.cacheTimeClient, TimeUnit.MINUTES).build();
-        // TODO add a config option for the length
-        this.textureCache = CacheBuilder.newBuilder().removalListener(this).expireAfterAccess(20, TimeUnit.MINUTES).build();
+        long cacheMinutes = DMConfig.CLIENT_SPEC.isLoaded() ? DMConfig.CLIENT.memoryCacheMinutes.get() : 20L;
+        this.textureCache = CacheBuilder.newBuilder().removalListener(this).expireAfterAccess(cacheMinutes, TimeUnit.MINUTES).build();
         this.textureRequests = new AtomicInteger(0);
         this.textureCompletion = new ExecutorCompletionService<>(Executors.newFixedThreadPool(1));
         this.textureCleanup = new ArrayList<>();
@@ -105,7 +105,7 @@ public class DakiTextureManagerClient implements RemovalListener<Daki, DakiTextu
 
     public void serverSentTextures(DakiImageData imageData)
     {
-        this.textureRequests.decrementAndGet();
+        this.textureRequests.updateAndGet(value -> Math.max(0, value - 1));
         this.textureCompletion.submit(() -> imageData);
     }
 

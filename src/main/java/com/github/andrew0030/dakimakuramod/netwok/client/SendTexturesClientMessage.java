@@ -31,8 +31,8 @@ public record SendTexturesClientMessage(Daki daki, int sizeFront, int sizeBack, 
     public static SendTexturesClientMessage deserialize(FriendlyByteBuf buf)
     {
         String path = buf.readUtf(Short.MAX_VALUE);
-        String[] pathSplit = path.split(":");
-        Daki daki = DakimakuraMod.getDakimakuraManager().getDakiFromMap(pathSplit[0], pathSplit[1]);
+        String[] pathSplit = path.split(":", 2);
+        Daki daki = pathSplit.length == 2 ? DakimakuraMod.getDakimakuraManager().getDakiFromMap(pathSplit[0], pathSplit[1]) : null;
         int sizeFront = buf.readInt();
         int sizeBack = buf.readInt();
         int packetsNeeded = buf.readInt();

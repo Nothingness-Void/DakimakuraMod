@@ -1,5 +1,6 @@
 package com.github.andrew0030.dakimakuramod;
 
+import com.github.andrew0030.dakimakuramod.dakimakura.client.DakiTextureDiskCache;
 import com.github.andrew0030.dakimakuramod.dakimakura.client.DakiTextureManagerClient;
 import com.github.andrew0030.dakimakuramod.entities.dakimakura.DakimakuraRenderer;
 import com.github.andrew0030.dakimakuramod.registries.DMBlockEntities;
@@ -38,6 +39,8 @@ public class DakimakuraModClient
             // Gets the max size an image can be
             DakimakuraModClient.maxGpuTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
             LOGGER.info(String.format("Max GPU texture size: %d.", DakimakuraModClient.maxGpuTextureSize));
+            // Evict stale/oversize client disk cache entries now that the config is loaded.
+            DakiTextureDiskCache.initialise();
         });
     }
 
