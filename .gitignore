@@ -23,3 +23,6 @@ run
 
 # local run logs
 gradle-runClient-*.log
+
+# built jars copied to repo root
+/*.jar
