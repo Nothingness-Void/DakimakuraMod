@@ -1,6 +1,7 @@
 package com.github.andrew0030.dakimakuramod;
 
 import com.github.andrew0030.dakimakuramod.commands.DakiCommand;
+import com.github.andrew0030.dakimakuramod.config.DMConfig;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiExtractor;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiManager;
 import com.github.andrew0030.dakimakuramod.dakimakura.DakiTextureManagerCommon;
@@ -15,8 +16,10 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;
 import org.slf4j.Logger;
@@ -29,9 +32,13 @@ public class DakimakuraMod
     private static DakiManager dakiManager;
     private static DakiTextureManagerCommon dakiTextureManagerCommon;
 
-    public DakimakuraMod(IEventBus modEventBus)
+    public DakimakuraMod(IEventBus modEventBus, ModContainer modContainer)
     {
         IEventBus eventBus = NeoForge.EVENT_BUS;
+
+        // Register configs first so later lifecycle steps see loaded values.
+        modContainer.registerConfig(ModConfig.Type.COMMON, DMConfig.COMMON_SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, DMConfig.CLIENT_SPEC);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(DMNetwork::registerMessages);

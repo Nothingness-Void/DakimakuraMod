@@ -20,5 +20,7 @@ public interface IDakiPack
 
     byte[]  getResource(String path);
 
+    long getResourceSize(String path);
+
     boolean resourceExists(String path);
 }

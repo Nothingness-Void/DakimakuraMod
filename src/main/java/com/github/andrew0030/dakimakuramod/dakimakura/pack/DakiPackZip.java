@@ -1,6 +1,7 @@
 package com.github.andrew0030.dakimakuramod.dakimakura.pack;
 
 import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
+import com.github.andrew0030.dakimakuramod.dakimakura.DakiTextureHasher;
 import com.github.andrew0030.dakimakuramod.dakimakura.serialize.DakiJsonSerializer;
 import com.mojang.logging.LogUtils;
 import org.apache.commons.io.IOUtils;
@@ -61,6 +62,20 @@ public class DakiPackZip extends AbstractDakiPack
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public long getResourceSize(String path)
+    {
+        if (path == null)
+            return -1L;
+        try (ZipFile zipFile = new ZipFile(new File(this.dakiManager.getPackFolder(), this.getResourceName()), ZipFile.OPEN_READ)) {
+            ZipEntry entry = zipFile.getEntry(path);
+            return entry != null ? entry.getSize() : -1L;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1L;
     }
 
     /**
@@ -134,6 +149,7 @@ public class DakiPackZip extends AbstractDakiPack
                 if (daki != null)
                 {
                     LOGGER.info(String.format(logPrefix + "Loading Dakimakura: '%s'", split[split.length - 1]));
+                    daki.setTextureHash(DakiTextureHasher.createHash(this, daki));
                     this.addDaki(daki);
                 }
             } catch (IOException e) {
@@ -143,7 +159,9 @@ public class DakiPackZip extends AbstractDakiPack
         else
         {
             LOGGER.info(String.format(logPrefix + "Loading Dakimakura Without Json: '%s' (No Json)", dakiName));
-            this.addDaki(new Daki(this.getResourceName(), dakiName));
+            Daki daki = new Daki(this.getResourceName(), dakiName);
+            daki.setTextureHash(DakiTextureHasher.createHash(this, daki));
+            this.addDaki(daki);
         }
     }
 }

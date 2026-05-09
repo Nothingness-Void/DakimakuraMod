@@ -1,17 +1,21 @@
 package com.github.andrew0030.dakimakuramod.dakimakura;
 
 import com.github.andrew0030.dakimakuramod.DakimakuraModClient;
+import com.github.andrew0030.dakimakuramod.dakimakura.client.DakiTextureDiskCache;
 import com.github.andrew0030.dakimakuramod.netwok.NetworkUtil;
-import com.mojang.datafixers.util.Pair;
+import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
+import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
 public class DakiSendHelper
 {
-    private static final HashMap<Pair<Daki, Integer>, byte[]> unfinishedSkins = new HashMap<>();
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final HashMap<Daki, PendingTextureTransfer> unfinishedSkins = new HashMap<>();
     private static final int MAX_PACKET_SIZE = Short.MAX_VALUE;
+    private static final long TRANSFER_TIMEOUT_MS = 120_000L;
 
     /**
      * Called on <strong>Server Side</strong> to send {@link Daki} texture parts.
@@ -64,47 +68,121 @@ public class DakiSendHelper
      */
     public static void gotDakiTexturePartFromServer(Daki daki, int sizeFront, int sizeBack, int packetsNeeded, int idx, byte[] data)
     {
-        boolean lastPacket = packetsNeeded == 1 || packetsNeeded == DakiSendHelper.getPacketCountForDaki(daki) + 1;
+        if (daki == null || packetsNeeded <= 0 || idx < 0 || idx >= packetsNeeded)
+            return;
 
-        if (!lastPacket)
+        DakiSendHelper.cleanupTransfers();
+
+        if (packetsNeeded == 1)
         {
-            DakiSendHelper.unfinishedSkins.put(new Pair<>(daki, idx), data);
+            try
+            {
+                DakiSendHelper.finishTransfer(daki, sizeFront, sizeBack, data != null ? data : new byte[0]);
+            }
+            catch (RuntimeException e)
+            {
+                LOGGER.warn(String.format("Failed reading Dakimakura texture transfer for '%s'.", daki), e);
+                DakimakuraModClient.getDakiTextureManager().serverSentTextures(new DakiImageData(daki, null, null));
+            }
             return;
         }
 
-        byte[] totalData = DakiSendHelper.assembleData(daki, sizeFront + sizeBack, data, packetsNeeded);
+        PendingTextureTransfer transfer = DakiSendHelper.unfinishedSkins.get(daki);
+        if (transfer == null || !transfer.matches(sizeFront, sizeBack, packetsNeeded))
+        {
+            transfer = new PendingTextureTransfer(sizeFront, sizeBack, packetsNeeded);
+            DakiSendHelper.unfinishedSkins.put(daki, transfer);
+        }
+
+        transfer.add(idx, data != null ? data : new byte[0]);
+        if (!transfer.isComplete())
+            return;
+
+        DakiSendHelper.unfinishedSkins.remove(daki);
+        try
+        {
+            DakiSendHelper.finishTransfer(daki, sizeFront, sizeBack, transfer.assemble());
+        }
+        catch (RuntimeException e)
+        {
+            LOGGER.warn(String.format("Failed assembling Dakimakura texture transfer for '%s'.", daki), e);
+            DakimakuraModClient.getDakiTextureManager().serverSentTextures(new DakiImageData(daki, null, null));
+        }
+    }
+
+    private static void finishTransfer(Daki daki, int sizeFront, int sizeBack, byte[] totalData)
+    {
+        if (totalData.length != sizeFront + sizeBack)
+            throw new IllegalStateException("Dakimakura texture transfer size did not match header.");
         byte[] dataFront = (sizeFront > 0) ? Arrays.copyOfRange(totalData, 0, sizeFront) : null;
         byte[] dataBack = (sizeBack > 0) ? Arrays.copyOfRange(totalData, sizeFront, sizeFront + sizeBack) : null;
 
         DakiImageData imageData = new DakiImageData(daki, dataFront, dataBack);
+        DakiTextureDiskCache.save(imageData);
         DakimakuraModClient.getDakiTextureManager().serverSentTextures(imageData);
     }
 
-    /** Converts the given data, and all the cached data (if present) into one array, while maintaining data order. */
-    private static byte[] assembleData(Daki daki, int totalSize, byte[] lastPacketData, int packetsNeeded)
+    private static void cleanupTransfers()
     {
-        byte[] totalData = new byte[totalSize];
-        int index = 0;
-        for (int i = 0; i < packetsNeeded - 1; i++)
-        {
-            Pair<Daki, Integer> key = new Pair<>(daki, i);
-            byte[] dataChunk = unfinishedSkins.remove(key);
-            if (dataChunk == null)
-                throw new IllegalStateException("Attempted to retrieve non existing texture data from cache for key: [" + daki.toString() + ", index=" + i + "]");
-            System.arraycopy(dataChunk, 0, totalData, index, dataChunk.length);
-            index += dataChunk.length;
-        }
-        System.arraycopy(lastPacketData, 0, totalData, index, lastPacketData.length);
-        return totalData;
+        long now = System.currentTimeMillis();
+        DakiSendHelper.unfinishedSkins.entrySet().removeIf(entry -> now - entry.getValue().lastUpdate() > TRANSFER_TIMEOUT_MS);
     }
 
-    /** The amount of data packets that have already been cached for a given daki. */
-    private static int getPacketCountForDaki(Daki daki)
+    private static final class PendingTextureTransfer
     {
-        int count = 0;
-        for (Pair<Daki, Integer> key : unfinishedSkins.keySet())
-            if (key.getFirst().equals(daki))
-                count++;
-        return count;
+        private final int sizeFront;
+        private final int sizeBack;
+        private final int packetsNeeded;
+        private final byte[][] chunks;
+        private int receivedCount;
+        private long lastUpdate;
+
+        private PendingTextureTransfer(int sizeFront, int sizeBack, int packetsNeeded)
+        {
+            this.sizeFront = sizeFront;
+            this.sizeBack = sizeBack;
+            this.packetsNeeded = packetsNeeded;
+            this.chunks = new byte[packetsNeeded][];
+            this.lastUpdate = System.currentTimeMillis();
+        }
+
+        private boolean matches(int sizeFront, int sizeBack, int packetsNeeded)
+        {
+            return this.sizeFront == sizeFront && this.sizeBack == sizeBack && this.packetsNeeded == packetsNeeded;
+        }
+
+        private void add(int idx, byte[] data)
+        {
+            this.lastUpdate = System.currentTimeMillis();
+            if (this.chunks[idx] == null)
+                this.receivedCount++;
+            this.chunks[idx] = data;
+        }
+
+        private boolean isComplete()
+        {
+            return this.receivedCount == this.packetsNeeded;
+        }
+
+        private byte[] assemble()
+        {
+            byte[] totalData = new byte[this.sizeFront + this.sizeBack];
+            int index = 0;
+            for (byte[] chunk : this.chunks)
+            {
+                if (chunk == null)
+                    throw new IllegalStateException("Attempted to assemble incomplete Dakimakura texture transfer.");
+                if (index + chunk.length > totalData.length)
+                    throw new IllegalStateException("Attempted to assemble oversized Dakimakura texture transfer.");
+                System.arraycopy(chunk, 0, totalData, index, chunk.length);
+                index += chunk.length;
+            }
+            return totalData;
+        }
+
+        private long lastUpdate()
+        {
+            return this.lastUpdate;
+        }
     }
 }
