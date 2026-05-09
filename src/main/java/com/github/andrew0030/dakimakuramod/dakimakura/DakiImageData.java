@@ -55,14 +55,36 @@ public class DakiImageData
     /** Sets the texture byte arrays based on the Images of the {@link Daki}, which was passed to the {@link DakiImageData} object during initialization. */
     public void load()
     {
+        // Fast path: if the server-side disk cache has the optimized bytes, use them directly.
+        byte[][] cached = DakiImageServerCache.load(this.daki);
+        if (cached != null)
+        {
+            this.textureFront = cached[0];
+            this.textureBack = cached[1];
+            return;
+        }
+
         // We get the Daki Pack from the DakiManager
         IDakiPack dakiPack = DakimakuraMod.getDakimakuraManager().getDakiPack(this.daki.getPackDirectoryName());
         // We retrieve paths for the front and back Image of this Daki
         String pathFront = this.findImagePath(dakiPack, this.daki.getDakiDirectoryName(), this.daki.getImageFront(), DEFAULT_NAME_FRONT);
         String pathBack = this.findImagePath(dakiPack, this.daki.getDakiDirectoryName(), this.daki.getImageBack(), DEFAULT_NAME_BACK);
         // We convert the found files to byte arrays
-        this.textureFront = dakiPack.getResource(pathFront);
-        this.textureBack = dakiPack.getResource(pathBack);
+        this.textureFront = this.loadOptimizedResource(dakiPack, pathFront);
+        this.textureBack = pathFront != null && pathFront.equals(pathBack)
+                ? this.textureFront
+                : this.loadOptimizedResource(dakiPack, pathBack);
+
+        // Persist the optimized bytes so the next request (or next restart) can skip the heavy work.
+        DakiImageServerCache.save(this.daki, this.textureFront, this.textureBack);
+    }
+
+    private byte[] loadOptimizedResource(IDakiPack dakiPack, String path)
+    {
+        if (!DakiImageOptimizer.isSourceSizeAllowed(dakiPack.getResourceSize(path), path))
+            return null;
+        byte[] imageBytes = dakiPack.getResource(path);
+        return DakiImageOptimizer.optimizeForTransfer(this.daki, imageBytes, path);
     }
 
     /**

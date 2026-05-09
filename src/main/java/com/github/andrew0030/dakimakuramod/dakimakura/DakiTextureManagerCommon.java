@@ -1,5 +1,6 @@
 package com.github.andrew0030.dakimakuramod.dakimakura;
 
+import com.github.andrew0030.dakimakuramod.config.DMConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.logging.LogUtils;
@@ -19,9 +20,8 @@ public class DakiTextureManagerCommon implements Runnable
 
     public DakiTextureManagerCommon()
     {
-        //TODO: add config version of this later
-//        this.dakiImageCache = CacheBuilder.newBuilder().expireAfterAccess(ConfigHandler.cacheTimeServer, TimeUnit.MINUTES).build();
-        this.dakiImageCache = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
+        long cacheMinutes = DMConfig.COMMON_SPEC.isLoaded() ? DMConfig.COMMON.memoryCacheMinutes.get() : 10L;
+        this.dakiImageCache = CacheBuilder.newBuilder().expireAfterAccess(cacheMinutes, TimeUnit.MINUTES).build();
         this.waitingClients = new ArrayList<>();
         this.dakiLoadQueue = new ArrayList<>();
     }
@@ -51,7 +51,11 @@ public class DakiTextureManagerCommon implements Runnable
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            this.processDakiQueue();
+            try {
+                this.processDakiQueue();
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed processing Dakimakura texture queue.", e);
+            }
         }
         LOGGER.info("Stopped texture manager thread.");
     }
@@ -71,20 +75,38 @@ public class DakiTextureManagerCommon implements Runnable
 
     private void loadDakiTextures(Daki daki)
     {
-        DakiImageData imageData = new DakiImageData(daki);
+        if (daki == null)
+            return;
+
+        DakiImageData imageData;
+        try
+        {
+            imageData = new DakiImageData(daki);
+        }
+        catch (RuntimeException e)
+        {
+            LOGGER.error(String.format("Failed loading Dakimakura texture for '%s'.", daki), e);
+            imageData = new DakiImageData(daki, null, null);
+        }
+        finally
+        {
+            synchronized (this.dakiLoadQueue)
+            {
+                this.dakiLoadQueue.remove(daki);
+            }
+        }
         synchronized (this.dakiImageCache)
         {
             this.dakiImageCache.put(daki, imageData);
-        }
-        synchronized (this.dakiLoadQueue)
-        {
-            this.dakiLoadQueue.remove(daki);
         }
         this.checkAndSendToClients();
     }
 
     public void onClientRequestTexture(ServerPlayer serverPlayer, Daki daki)
     {
+        if (serverPlayer == null || daki == null)
+            return;
+
         synchronized (this.dakiImageCache)
         {
             if (this.dakiImageCache.asMap().containsKey(daki))

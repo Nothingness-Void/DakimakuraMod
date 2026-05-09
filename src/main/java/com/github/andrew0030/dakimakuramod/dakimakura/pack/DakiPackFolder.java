@@ -1,6 +1,7 @@
 package com.github.andrew0030.dakimakuramod.dakimakura.pack;
 
 import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
+import com.github.andrew0030.dakimakuramod.dakimakura.DakiTextureHasher;
 import com.github.andrew0030.dakimakuramod.dakimakura.serialize.DakiJsonSerializer;
 import com.mojang.logging.LogUtils;
 import net.minecraft.util.StringUtil;
@@ -52,6 +53,15 @@ public class DakiPackFolder extends AbstractDakiPack
         return new File(this.dakiManager.getPackFolder(), this.getResourceName() + "/" + path).exists();
     }
 
+    @Override
+    public long getResourceSize(String path)
+    {
+        if (path == null)
+            return -1L;
+        File file = new File(this.dakiManager.getPackFolder(), this.getResourceName() + "/" + path);
+        return file.isFile() ? file.length() : -1L;
+    }
+
     /**
      * Loads and stores each {@link Daki} found inside the Daki Pack
      * @return The same {@link DakiPackFolder} instance, but with its dakiMap populated
@@ -88,6 +98,7 @@ public class DakiPackFolder extends AbstractDakiPack
                 if (dakimakura != null)
                 {
                     LOGGER.info(String.format(logPrefix + "Loading Dakimakura: '%s'", dakiDir.getName()));
+                    dakimakura.setTextureHash(DakiTextureHasher.createHash(this, dakimakura));
                     this.addDaki(dakimakura);
                 }
             }
@@ -95,7 +106,9 @@ public class DakiPackFolder extends AbstractDakiPack
         else
         {
             LOGGER.info(String.format(logPrefix + "Loading Dakimakura: '%s' (No Json)", dakiDir.getName()));
-            this.addDaki(new Daki(packDir.getName(), dakiDir.getName()));
+            Daki dakimakura = new Daki(packDir.getName(), dakiDir.getName());
+            dakimakura.setTextureHash(DakiTextureHasher.createHash(this, dakimakura));
+            this.addDaki(dakimakura);
         }
     }
 

@@ -24,6 +24,7 @@ public class Daki implements Comparable<Daki>
     private String imageBack = null;
     private String flavourText = "";
     private boolean smooth = true;
+    private String textureHash = null;
 
     public Daki(String packDirectoryName, String dakiDirectoryName)
     {
@@ -99,6 +100,16 @@ public class Daki implements Comparable<Daki>
     public void setSmooth(boolean smooth)
     {
         this.smooth = smooth;
+    }
+
+    public String getTextureHash()
+    {
+        return this.textureHash;
+    }
+
+    public void setTextureHash(String textureHash)
+    {
+        this.textureHash = textureHash;
     }
 
     @Override
