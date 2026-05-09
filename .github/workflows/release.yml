@@ -52,6 +52,17 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Pre-cache vineflower for ForgeGradle Mavenizer
+      if: matrix.loader == 'forge' && matrix.mc_version == '1.21.1'
+      shell: bash
+      run: |
+        set -euo pipefail
+        CACHE_DIR="$HOME/.gradle/caches/minecraftforge/forgegradle/mavenizer/caches/org/vineflower/vineflower/1.10.1"
+        mkdir -p "$CACHE_DIR"
+        curl -fsSL -o "$CACHE_DIR/vineflower-1.10.1.jar" \
+          "https://repo.maven.apache.org/maven2/org/vineflower/vineflower/1.10.1/vineflower-1.10.1.jar"
+        echo "Pre-cached vineflower-1.10.1.jar from Maven Central"
+
     - name: Resolve build version
       id: build_version
       shell: bash
