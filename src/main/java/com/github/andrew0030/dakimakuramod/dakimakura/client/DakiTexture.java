@@ -72,10 +72,19 @@ public class DakiTexture implements AutoCloseable
                     return;
                 }
 
-                // We determine the bigger size to use, and make sure the size is within max size
+                // We determine the bigger size to use, and make sure the size is within max size.
+                // NOTE: front and back are stacked vertically during upload, so the uploaded
+                // height is textureSize * 2. We must keep both the uploaded width (textureSize / 3)
+                // and height (textureSize * 2) within GL_MAX_TEXTURE_SIZE, otherwise some GL
+                // drivers (notably NVIDIA's nvoglv64.dll) crash inside glTexImage2D while
+                // reading the user buffer (access violation).
                 int biggerTexture = Math.max(frontHeight[0], backHeight[0]);
                 int maxTextureSize = this.getMaxTextureSize();
-                int textureSize = Math.min(biggerTexture, maxTextureSize);// TODO atm height is x2 because the images are stacked, either deal with this or ignore if fixed
+                // Cap so uploaded dimensions never exceed GL_MAX_TEXTURE_SIZE.
+                // Height constraint: textureSize * 2 <= maxTextureSize  -> textureSize <= maxTextureSize / 2
+                int textureSize = Math.min(biggerTexture, maxTextureSize / 2);
+                // Defensive floor: need at least 3 so textureSize / 3 >= 1.
+                if (textureSize < 3) textureSize = 3;
 
                 // Resize images if needed
                 imageBufferFront = this.resize(imageBufferFront, frontWidth[0], frontHeight[0], textureSize / 3, textureSize, !isFrontMissing && this.daki.isSmooth());
@@ -189,8 +198,11 @@ public class DakiTexture implements AutoCloseable
         // If no resizing is needed we return the given image buffer
         if (oldWidth == newWidth && oldHeight == newHeight) return imgBuffer;
 
-        // Allocates memory for the resized image
-        ByteBuffer resizedBuffer = MemoryUtil.memAlloc(newWidth * newHeight * 4); // 4 channels (RGBA)
+        // Allocates memory for the resized image (guard against 32-bit overflow)
+        long resizedBytes = (long) newWidth * (long) newHeight * 4L;
+        if (resizedBytes <= 0 || resizedBytes > Integer.MAX_VALUE)
+            throw new IllegalStateException("Dakimakura resize target too large: " + resizedBytes + " bytes");
+        ByteBuffer resizedBuffer = MemoryUtil.memAlloc((int) resizedBytes); // 4 channels (RGBA)
         if (isSmooth) {
             STBImageResize.stbir_resize_uint8(imgBuffer, oldWidth, oldHeight, 0, resizedBuffer, newWidth, newHeight, 0, 4); // 4 channels (RGBA)
         } else {
@@ -225,8 +237,13 @@ public class DakiTexture implements AutoCloseable
 
     private ByteBuffer combineImages(ByteBuffer imageBufferFront, ByteBuffer imageBufferBack, int imagesWidth, int imagesHeight)
     {
-        // Allocate memory for the combined image buffer
-        ByteBuffer combinedBuffer = MemoryUtil.memAlloc(imagesWidth * imagesHeight * 2 * 4); // 4 channels (RGBA)
+        // Allocate memory for the combined image buffer.
+        // Use long math to avoid 32-bit int overflow for very large textures
+        // (e.g. 32768 * 32768 * 2 * 4 overflows int and would pass garbage to memAlloc).
+        long combinedBytes = (long) imagesWidth * (long) imagesHeight * 2L * 4L;
+        if (combinedBytes <= 0 || combinedBytes > Integer.MAX_VALUE)
+            throw new IllegalStateException("Dakimakura combined texture too large: " + combinedBytes + " bytes");
+        ByteBuffer combinedBuffer = MemoryUtil.memAlloc((int) combinedBytes); // 4 channels (RGBA)
 
         imageBufferFront.rewind(); // Resets position to start
         combinedBuffer.put(imageBufferFront);
