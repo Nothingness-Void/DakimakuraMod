@@ -42,9 +42,9 @@ minecraft {
 
 repositories {
     minecraft.mavenizer(it)
+    mavenCentral()
     maven fg.forgeMaven
     maven fg.minecraftLibsMaven
-    mavenCentral()
     maven { url "https://www.cursemaven.com" }
 }
 
