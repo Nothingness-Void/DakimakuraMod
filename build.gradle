@@ -49,6 +49,7 @@ mixin {
 }
 
 repositories {
+    mavenCentral()
     maven { url "https://www.cursemaven.com" }
 }
 
