@@ -1,8 +1,13 @@
 # Configuration Reference
 
-_[中文版本 / Chinese version](./Configuration-zh.md)_
+[Back to Wiki Home](./Home.md) | _[中文版本 / Chinese version](./Configuration-zh.md)_
 
-Dakimakura Mod (Nothingness-Void Fork) exposes a number of tunables through two Forge config files. Both are created automatically on first launch and reload on-the-fly when edited in-game from the **Mods → Dakimakura Mod → Config** screen.
+Dakimakura Mod (Nothingness-Void Fork) exposes a number of tunables through two TOML config files. Both are created automatically on first launch:
+
+- **Forge & NeoForge**: Edit in-game via **Mods → Dakimakura Mod → Config** (changes reload on-the-fly), or edit the TOML files directly.
+- **Fabric**: Edit the TOML files directly in `<gameDir>/config/` and run `/dakimakura reload` (requires OP / cheats enabled) to apply changes without restarting.
+
+The mod also includes automatic memory/VRAM guards and batched pack-list sync (256 KiB batches) so large pack collections remain stable out of the box.
 
 | File | Side | Path |
 |---|---|---|

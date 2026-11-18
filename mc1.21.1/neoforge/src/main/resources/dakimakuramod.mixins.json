@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.github.andrew0030.dakimakuramod.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CreativeModeTabsAccessor"
+  ],
+  "client": [
+    "CreativeModeInventoryScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

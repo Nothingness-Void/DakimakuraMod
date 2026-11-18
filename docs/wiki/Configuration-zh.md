@@ -1,8 +1,13 @@
 # 配置项参考
 
-_[English version / 英文版本](./Configuration.md)_
+_[English version / 英文版本](./Configuration.md) | [返回 Wiki 首页](./Home-zh.md)_
 
-Dakimakura Mod（Nothingness-Void 维护分支）提供两个 Forge 配置文件，可通过 **Mods → Dakimakura Mod → Config** 界面内编辑，保存后会热加载。首次启动时自动生成。
+Dakimakura Mod（Nothingness-Void 维护分支）支持 **Forge / NeoForge / Fabric** 多 Loader，首次启动时会自动在 `<gameDir>/config/` 下生成两个 TOML 配置文件：
+
+- **Forge / NeoForge**：可通过游戏内 **Mods → Dakimakura Mod → Config** 界面直接编辑并热加载。
+- **Fabric**：可直接编辑 `<gameDir>/config/` 下的 TOML 文件（或配合 Mod Menu 查改），修改后在游戏内或控制台执行 `/dakimakura reload` 即可热加载生效。
+
+此外，Mod 内置了自动内存/显存上限防护（受 GPU `GL_MAX_TEXTURE_SIZE` 与像素安全阈值约束）以及登录时 **256 KiB** 抱枕列表分批同步与异步解码队列，即使在海量抱枕服务器上也能防止卡顿或数据包超限。
 
 | 文件 | 作用范围 | 路径 |
 |---|---|---|

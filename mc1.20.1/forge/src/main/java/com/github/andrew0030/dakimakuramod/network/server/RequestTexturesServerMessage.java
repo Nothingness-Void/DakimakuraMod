@@ -1,0 +1,57 @@
+package com.github.andrew0030.dakimakuramod.network.server;
+
+import com.github.andrew0030.dakimakuramod.DakimakuraModCommon;
+import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
+import com.github.andrew0030.dakimakuramod.network.NetworkUtil;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.function.Supplier;
+
+public record RequestTexturesServerMessage(String path, Daki daki)
+{
+    public RequestTexturesServerMessage(Daki daki)
+    {
+        this(daki != null ? daki.getPackDirectoryName() + ":" + daki.getDakiDirectoryName() : "", daki);
+    }
+
+    public void serialize(FriendlyByteBuf buf)
+    {
+        String resolvedPath = this.path != null ? this.path : (this.daki != null ? this.daki.getPackDirectoryName() + ":" + this.daki.getDakiDirectoryName() : "");
+        buf.writeUtf(resolvedPath);
+    }
+
+    public static RequestTexturesServerMessage deserialize(FriendlyByteBuf buf)
+    {
+        String path = buf.readUtf(Short.MAX_VALUE);
+        String[] pathSplit = path.split(":", 2);
+        Daki daki = (pathSplit.length == 2 && DakimakuraModCommon.getDakimakuraManager() != null)
+                ? DakimakuraModCommon.getDakimakuraManager().getDakiFromMap(pathSplit[0], pathSplit[1])
+                : null;
+        return new RequestTexturesServerMessage(path, daki);
+    }
+
+    public static void handle(RequestTexturesServerMessage message, Supplier<NetworkEvent.Context> ctx)
+    {
+        NetworkEvent.Context context = ctx.get();
+        ServerPlayer serverPlayer = context.getSender();
+        Daki daki = message.daki();
+
+        if (context.getDirection().getReceptionSide() == LogicalSide.SERVER)
+        {
+            context.enqueueWork(() ->
+            {
+                if (serverPlayer != null)
+                {
+                    if (daki != null)
+                        DakimakuraModCommon.getTextureManagerCommon().onClientRequestTexture(serverPlayer, daki);
+                    else
+                        NetworkUtil.sendTextures(serverPlayer, message.path(), null, 0, 0, 1, 0, null);
+                }
+            });
+            context.setPacketHandled(true);
+        }
+    }
+}

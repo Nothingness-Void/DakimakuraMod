@@ -13,16 +13,27 @@ out
 *.iml
 .idea
 
+# vscode
+.vscode/
+
+# worktrees
+.worktrees/
+
 # gradle
 build
 .gradle
+mc*/.gradle/
+mc*/build/
+mc*/*/build/
 
 # other
 eclipse
 run
+mc*/*/run/
 
-# local run logs
+# local run logs & launcher
 gradle-runClient-*.log
+run-test-client.bat
 
 # built jars copied to repo root
 /*.jar

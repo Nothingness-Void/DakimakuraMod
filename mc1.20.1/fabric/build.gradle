@@ -1,0 +1,57 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+}
+
+base {
+    archivesName = "${mod_id}"
+}
+
+version = "${mod_version}+mc${minecraft_version}-fabric"
+
+sourceSets {
+    main {
+        java {
+            srcDirs += ['../../common-shared/src/main/java', '../common/src/main/java']
+        }
+        resources {
+            srcDirs += ['../../common-shared/src/main/resources', '../common/src/main/resources']
+        }
+    }
+}
+
+loom {
+    accessWidenerPath = file("../common/src/main/resources/dakimakuramod.accesswidener")
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    var replaceProperties = [
+            minecraft_version   : minecraft_version,
+            fabric_loader_version: fabric_loader_version,
+            mod_id              : mod_id,
+            mod_name            : mod_name,
+            mod_license         : mod_license,
+            mod_version         : mod_version,
+            mod_authors         : mod_authors,
+            mod_description     : mod_description,
+            mod_credits         : mod_credits,
+            display_url         : display_url,
+            issue_tracker_url   : issue_tracker_url
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['fabric.mod.json', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
+}
+
+remapJar {
+    archiveFileName.set("${mod_id}-${mod_version}+mc${minecraft_version}-fabric.jar")
+}

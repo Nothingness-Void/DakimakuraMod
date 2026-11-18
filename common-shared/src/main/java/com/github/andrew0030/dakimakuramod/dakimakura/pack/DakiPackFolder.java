@@ -1,0 +1,124 @@
+package com.github.andrew0030.dakimakuramod.dakimakura.pack;
+
+import com.github.andrew0030.dakimakuramod.dakimakura.Daki;
+import com.github.andrew0030.dakimakuramod.dakimakura.DakiTextureHasher;
+import com.github.andrew0030.dakimakuramod.dakimakura.serialize.DakiJsonSerializer;
+import com.mojang.logging.LogUtils;
+import net.minecraft.util.StringUtil;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class DakiPackFolder extends AbstractDakiPack
+{
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    public DakiPackFolder(String folder)
+    {
+        super(folder);
+    }
+
+    @Override
+    public String getName()
+    {
+        return this.getResourceName();
+    }
+
+    @Override
+    public byte[] getResource(String path)
+    {
+        if (path == null) return null;
+
+        try (FileInputStream inputStream = new FileInputStream(new File(this.dakiManager.getPackFolder(), this.getResourceName() + "/" + path))) {
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean resourceExists(String path)
+    {
+        return new File(this.dakiManager.getPackFolder(), this.getResourceName() + "/" + path).exists();
+    }
+
+    @Override
+    public long getResourceSize(String path)
+    {
+        if (path == null)
+            return -1L;
+        File file = new File(this.dakiManager.getPackFolder(), this.getResourceName() + "/" + path);
+        return file.isFile() ? file.length() : -1L;
+    }
+
+    /**
+     * Loads and stores each {@link Daki} found inside the Daki Pack
+     * @return The same {@link DakiPackFolder} instance, but with its dakiMap populated
+     */
+    public DakiPackFolder loadPack()
+    {
+        LOGGER.info(String.format("Loading Pack: '%s'", this.getName()));
+        File dir = new File(this.dakiManager.getPackFolder(), this.getResourceName());
+        File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            LOGGER.warn(String.format("No Files found in Pack: '%s'", this.getName()));
+            return this;
+        }
+        List<File> fileList = Arrays.stream(files)
+                .filter(File::isDirectory)
+                .sorted(Comparator.comparing(File::getName))
+                .collect(Collectors.toList());
+        for (int i = 0; i < fileList.size(); i++)
+            if (fileList.get(i).isDirectory())
+                this.loadDaki(dir, fileList.get(i), (i == fileList.size() - 1));
+        return this;
+    }
+
+    private void loadDaki(File packDir, File dakiDir, boolean lastInPack)
+    {
+        String logPrefix = lastInPack ? " \\ " : " | ";
+        File dakiFile = new File(dakiDir, "daki-info.json");
+        if (dakiFile.exists())
+        {
+            String dakiJson = this.readStringFromFile(dakiFile);
+            if (!StringUtil.isNullOrEmpty(dakiJson))
+            {
+                Daki dakimakura = DakiJsonSerializer.deserialize(dakiJson, packDir.getName(), dakiDir.getName());
+                if (dakimakura != null)
+                {
+                    LOGGER.info(String.format(logPrefix + "Loading Dakimakura: '%s'", dakiDir.getName()));
+                    dakimakura.setTextureHash(DakiTextureHasher.createHash(this, dakimakura));
+                    this.addDaki(dakimakura);
+                }
+            }
+        }
+        else
+        {
+            LOGGER.info(String.format(logPrefix + "Loading Dakimakura: '%s' (No Json)", dakiDir.getName()));
+            Daki dakimakura = new Daki(packDir.getName(), dakiDir.getName());
+            dakimakura.setTextureHash(DakiTextureHasher.createHash(this, dakimakura));
+            this.addDaki(dakimakura);
+        }
+    }
+
+    private String readStringFromFile(File file)
+    {
+        String data = null;
+        try {
+            data = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+}
